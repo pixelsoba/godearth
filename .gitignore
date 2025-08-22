@@ -1,0 +1,11 @@
+/build/
+/bin/
+/extern/godot-cpp/**/bin/
+/extern/godot-cpp/**/lib/
+/extern/godot-cpp/**/out/
+*.user
+*.vcxproj*
+*.sln
+.DS_Store
+demo/.godot
+demo/bin

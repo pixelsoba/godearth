@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhteig41vjb8f"]
+
+[ext_resource type="Script" uid="uid://dsaco1dkdqn2y" path="res://scenes/test_map_2d.gd" id="1_u4lv2"]
+
+[node name="Root" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_u4lv2")
+
+[node name="Map" type="Map2DControl" parent="."]
+layout_mode = 0

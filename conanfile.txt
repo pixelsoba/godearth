@@ -1,0 +1,25 @@
+[requires]
+gdal/3.10.3
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+# Link statically for the extension (adjust to your taste)
+gdal/*:shared=False
+
+# Enable common drivers in GDAL (these option names follow ConanCenter's recipe)
+gdal/*:with_curl=True
+gdal/*:with_png=True
+gdal/*:with_jpeg=libjpeg
+gdal/*:with_tiff=True
+gdal/*:with_geotiff=True
+gdal/*:with_proj=True
+gdal/*:with_sqlite3=True
+
+# If you prefer OpenSSL over platform SSL (Windows has winssl alternative)
+gdal/*:with_openssl=True
+
+# Some platforms require this for older compilers
+#gdal/*:with_iconv=True

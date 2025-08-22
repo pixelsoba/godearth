@@ -1,0 +1,14 @@
+{
+  "entry_symbol": "gdextension_entry",
+  "dependencies": {
+    "windows": {
+      "library": "res://bin/godot-gis.windows.template_debug.x86_64.dll"
+    },
+    "linux": {
+      "library": "res://bin/libgodot-gis.linux.template_debug.x86_64.so"
+    },
+    "macos": {
+      "library": "res://bin/libgodot-gis.macos.template_debug.arm64.dylib"
+    }
+  }
+}

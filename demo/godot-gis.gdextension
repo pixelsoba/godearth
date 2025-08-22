@@ -1,0 +1,8 @@
+[configuration]
+entry_symbol = "gdextension_entry"
+compatibility_minimum = "4.4"
+reloadable = true
+
+[libraries]
+windows.debug.x86_64 = "res://bin/godot-gis.dll"
+windows.release.x86_64 = "res://bin/godot-gis.dll"
