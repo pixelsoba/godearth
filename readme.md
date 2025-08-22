@@ -1,40 +1,65 @@
-# godot-gis-starter (Conan edition)
+# GodEarth 🌍
 
-Conan-based setup for a Godot 4.3/4.4 GDExtension that links to GDAL/OGR/PROJ.
+**GodEarth** est un moteur et un outil **SIG (Système d’Information Géographique)** basé sur [Godot Engine](https://godotengine.org/).  
+L’objectif est de fournir un module **GDExtension** qui permet d’intégrer des fonctionnalités GIS avancées directement dans Godot, en s’appuyant notamment sur la bibliothèque [GDAL](https://gdal.org/).
 
-## Quick start (Conan 2.x)
+---
+
+## ⚙️ Pré-requis
+
+Avant de commencer, assurez-vous d’avoir installé :
+
+- **Python** ≥ 3.9 (nécessaire pour Conan et SCons)  
+- **Conan** ≥ 2.x  
+- **SCons** ≥ 4.x  
+- **CMake** ≥ 3.24  
+- **MSVC** (Visual Studio 2022 recommandé)  
+- **Git** (pour les submodules)
+
+---
+
+## 📂 Setup du projet
+
+Cloner le projet avec ses sous-modules :
 
 ```bash
-# 1) Add godot-cpp submodule (match your editor version)
-git submodule add https://github.com/godotengine/godot-cpp.git extern/godot-cpp
+git clone https://github.com/<ton-user>/godearth.git
+cd godearth
 git submodule update --init --recursive
-# checkout branch 4.4 or 4.3 to match your Godot editor
 
-# 2) Detect a default profile
-conan profile detect --force
 
-# 3) Install deps (RelWithDebInfo example)
-conan install . --output-folder=build --build=missing -s build_type=RelWithDebInfo
+# 🔨 Procédure de build
 
-# 4) Configure CMake with Conan toolchain
+```
+# Clean
+rm -rf build
+
+# Generation de extension_api.json
+godot.exe --headless --dump-extension-api build/extension_api.json
+```
+
+👉 Ce fichier extension_api.json doit être copié dans extern/godot-cpp/ pour remplacer celui existant.
+
+## Génération des bindings C++
+
+```
+pushd extern/godot-cpp
+scons platform=windows target=template_debug   generate_bindings=yes -j16
+scons platform=windows target=template_release generate_bindings=yes -j16
+popd
+```
+
+## Installation des dépendances, config et build
+
+```
+conan install . --output-folder=build --build=missing ^
+  -s build_type=RelWithDebInfo ^
+  -s:h compiler.cppstd=17 ^
+  -s:b compiler.cppstd=17
+
 cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake
-
-# 5) Build
 cmake --build build --config RelWithDebInfo
 ```
 
-> The Conan generators place package config files in `build/generators`. The CMakeLists already adds this folder to `CMAKE_PREFIX_PATH` so `find_package(gdal CONFIG REQUIRED)` resolves and exposes `gdal::gdal`.
 
-## Notes
-- `conanfile.txt` pins `gdal/3.*` and `proj/9.*`. Adjust versions if you need a specific one.
-- GDAL typically pulls PROJ as a dependency, but adding `proj` explicitly makes it available as `proj::proj`.
-- If you prefer dynamic GDAL (`shared=True`), flip the options.
-- On Windows/MSVC, the default profile uses the MD runtime (dynamic). Change via:
-  ```bash
-  conan profile update 'conf.tools.cmake.cmaketoolchain:msvc_runtime_type=static' default
-  ```
-  or pass it on the command line.
 
-## Godot integration
-- After build, copy the produced library from `build/bin/` to `demo/bin/` and open `demo/` in the editor.
-- The `godot-gis.gdextension` file expects platform-specific names; adjust as needed.
