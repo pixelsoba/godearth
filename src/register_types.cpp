@@ -6,6 +6,7 @@
 #include "map2d_control.hpp"
 #include "globe3d.hpp"
 #include "vector_source.hpp"
+#include "math/Ellipsoid.hpp"
 
 using namespace godot;
 
@@ -20,6 +21,7 @@ static void initialize_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Map2DControl>();
     ClassDB::register_class<Globe3D>();
     ClassDB::register_class<VectorSource>();
+    ClassDB::register_class<Ellipsoid>();
 
     g_gis_singleton = memnew(GisSingleton);
     Engine::get_singleton()->register_singleton("Gis", g_gis_singleton);
@@ -39,7 +41,7 @@ static void uninitialize_module(ModuleInitializationLevel p_level) {
     }
 }
 
-extern "C" GDExtensionBool GDE_EXPORT
+extern "C" __declspec(dllexport) GDExtensionBool GDE_EXPORT
 gdextension_entry(GDExtensionInterfaceGetProcAddress p_get_proc_address,
                   GDExtensionClassLibraryPtr p_library,
                   GDExtensionInitialization *r_initialization) {

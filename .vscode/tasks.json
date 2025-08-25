@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Conan: install",
+            "type": "shell",
+            "command": "conan install . --output-folder=build --build=missing -s build_type=RelWithDebInfo -s:h compiler.cppstd=17 -s:b compiler.cppstd=17",
+            "presentation": { "reveal": "always" },
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: configure",
+            "type": "shell",
+            "command": "cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake",
+            "presentation": { "reveal": "always" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build (RelWithDebInfo)",
+            "type": "shell",
+            "command": "cmake --build build --config RelWithDebInfo",
+            "presentation": { "reveal": "always" },
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": ["$msCompile"]
+        },
+        {
+            "label": "Deploy godot-gis.dll to demo/bin",
+            "type": "shell",
+            "command": "if (Test-Path build\\bin\\RelWithDebInfo\\godot-gis.dll) { Copy-Item -Path build\\bin\\RelWithDebInfo\\godot-gis.dll -Destination demo\\bin -Force } elseif (Test-Path build\\bin\\godot-gis.dll) { Copy-Item -Path build\\bin\\godot-gis.dll -Destination demo\\bin -Force } else { Write-Error 'godot-gis.dll not found in build/bin'; exit 1 }",
+            "presentation": { "reveal": "always" },
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean build folder",
+            "type": "shell",
+            "command": "if (Test-Path build) { Remove-Item -Recurse -Force build } else { Write-Output 'No build folder to remove.' }",
+            "presentation": { "reveal": "always" },
+            "problemMatcher": []
+        }
+    ]
+}

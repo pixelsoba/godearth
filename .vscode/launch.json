@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Godot (demo)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "Godot_v4.5-beta6_win64.exe",
+      "args": ["-e", "--path", "${workspaceFolder}/demo"],
+      "cwd": "${workspaceFolder}/demo",
+      "preLaunchTask": "Deploy godot-gis.dll to demo/bin",
+      "stopAtEntry": false,
+      "externalConsole": false
+    }
+  ]
+}

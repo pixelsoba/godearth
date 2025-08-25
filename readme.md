@@ -26,11 +26,11 @@ Cloner le projet avec ses sous-modules :
 git clone https://github.com/<ton-user>/godearth.git
 cd godearth
 git submodule update --init --recursive
-
+```
 
 # 🔨 Procédure de build
 
-```
+```bash
 # Clean
 rm -rf build
 
@@ -42,22 +42,19 @@ godot.exe --headless --dump-extension-api build/extension_api.json
 
 ## Génération des bindings C++
 
-```
-pushd extern/godot-cpp
+```bash
+cd extern/godot-cpp
 scons platform=windows target=template_debug   generate_bindings=yes -j16
 scons platform=windows target=template_release generate_bindings=yes -j16
-popd
+cd ../..
 ```
 
 ## Installation des dépendances, config et build
 
-```
-conan install . --output-folder=build --build=missing ^
-  -s build_type=RelWithDebInfo ^
-  -s:h compiler.cppstd=17 ^
-  -s:b compiler.cppstd=17
+```bash
+conan install . --output-folder=build --build=missing -s build_type=RelWithDebInfo -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
 
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="build/conan_toolchain.cmake"
 cmake --build build --config RelWithDebInfo
 ```
 

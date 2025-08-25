@@ -14,11 +14,11 @@ add_subdirectory(extern/godot-cpp)
 
 # Find Conan-provided packages (from CMakeDeps)
 find_package(gdal CONFIG REQUIRED)   # provides target gdal::gdal
-# PROJ may be a transitive dep of GDAL, but if present as direct dep we can link it too
 find_package(proj CONFIG QUIET)      # provides target proj::proj
 
-file(GLOB SRC CONFIGURE_DEPENDS
-    src/*.cpp
+file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
+    src/*.cpp # <-- Ajout de celui-ci
+    src/**/*.cpp
 )
 
 add_library(godot-gis SHARED ${SRC})
