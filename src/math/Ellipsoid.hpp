@@ -19,7 +19,11 @@ public:
 
     void _ready() override;
 
-    void initialize(const Vector3 &radii);
+    // Setter/getter for the ellipsoid axes (previously "radii"). This can be set before the node
+    // enters the scene to avoid being overwritten by _ready.
+    void set_axis(const Vector3 &axis);
+    Vector3 get_axis() const;
+
     real_t get_minimum_radius() const;
     real_t get_maximum_radius() const;
     Vector3 geodetic_to_3d(real_t latitude_deg, real_t longitude_deg, real_t altitude) const;
@@ -27,16 +31,16 @@ public:
     Array intersections(const Vector3 &origin, const Vector3 &direction) const;
     Vector3 centric_surface_normal(const Vector3 &position) const;
 
-    // Factory static methods to expose common ellipsoid vectors to GDScript
-    static Vector3 create_wgs84();
-    static Vector3 create_scaled_wgs84();
-    static Vector3 create_unit_sphere();
+    // Factory static methods to create Ellipsoid instances initialized with common axes
+    static Ellipsoid *create_wgs84();
+    static Ellipsoid *create_scaled_wgs84();
+    static Ellipsoid *create_unit_sphere();
 
 private:
-    Vector3 _radii;
-    Vector3 _radii_squared;
-    Vector3 _radii_to_the_fourth;
-    Vector3 _one_over_radii_squared;
+    Vector3 _axis;
+    Vector3 _axis_squared;
+    Vector3 _axis_to_the_fourth;
+    Vector3 _one_over_axis_squared;
 
     static const Vector3 WGS84;
     static const Vector3 SCALED_WGS84;
