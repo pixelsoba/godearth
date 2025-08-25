@@ -1,0 +1,23 @@
+{
+  "classes": {
+    "Ellipsoid": {
+      "description": "Node providing geodetic <-> cartesian utilities for map/earth workflows. Use 'axis' to set ellipsoid axes (meters): X/Y equatorial, Z polar.",
+      "properties": {
+        "axis": {
+          "description": "Axes (meters). Set before adding the node to the scene to avoid default overwrite. X and Y are equatorial radii; Z is the polar radius."
+        }
+      },
+      "methods": {
+        "set_axis": { "description": "Set ellipsoid axes (meters)." },
+        "get_axis": { "description": "Get current ellipsoid axes." },
+        "geodetic_to_3d": { "description": "Convert geodetic coordinates (latitude deg, longitude deg, altitude m) to cartesian Vector3 (meters)." },
+        "scale_to_geodetic_surface": { "description": "Project a 3D point onto the ellipsoid surface." },
+        "intersections": { "description": "Compute intersection 't' parameters of a ray with the ellipsoid; returns an Array of floats (0,1 or 2 values)." },
+        "centric_surface_normal": { "description": "Return the geocentric surface normal for a position (unit Vector3)." },
+        "create_wgs84": { "description": "Static factory: returns a new Ellipsoid node initialized with WGS84 axes." },
+        "create_scaled_wgs84": { "description": "Static factory: returns a new Ellipsoid node with scaled WGS84 axes (unit sphere scaled on Z)." },
+        "create_unit_sphere": { "description": "Static factory: returns a new Ellipsoid node using unit sphere axes (1,1,1)." }
+      }
+    }
+  }
+}

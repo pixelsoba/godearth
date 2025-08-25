@@ -58,5 +58,42 @@ cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="build/conan_toolchain.cmake"
 cmake --build build --config RelWithDebInfo
 ```
 
+## 🔁 Ajouter de la documentation aux bindings C++
+
+Pour que les classes/méthodes/propriétés exposées par la GDExtension aient une documentation visible dans l'éditeur Godot, il faut patcher le fichier `extension_api.json` avant de regénérer les bindings `godot-cpp`.
+
+Procédure recommandée :
+
+1. Générer l'API actuelle (si nécessaire) :
+
+```powershell
+# depuis la racine du projet
+godot.exe --headless --dump-extension-api build/extension_api.json
+```
+
+2. Fusionner ton patch JSON (dans `doc/extension_api_patches/`) avec `build/extension_api.json` et écrire le résultat dans `extern/godot-cpp/gdextension/extension_api.json`.
+
+Exemple simple (PowerShell) :
+
+```powershell
+# remplacer 'ellipsoid_doc.json' par le patch souhaité
+$base = Get-Content build/extension_api.json -Raw | ConvertFrom-Json
+$patch = Get-Content doc/extension_api_patches/ellipsoid_doc.json -Raw | ConvertFrom-Json
+# Fusion basique (remplace ou ajoute la classe Ellipsoid)
+$base.classes.Ellipsoid = $patch.classes.Ellipsoid
+$base | ConvertTo-Json -Depth 10 | Set-Content extern/godot-cpp/gdextension/extension_api.json
+```
+
+3. Regénérer les bindings `godot-cpp` :
+
+```powershell
+cd extern/godot-cpp
+scons platform=windows target=template_debug generate_bindings=yes -j8
+```
+
+4. Rebuild la GDExtension avec CMake.
+
+Note : la fusion JSON peut être plus fine (merging profond) si tu veux préserver d'autres descriptions. Le dossier `doc/extension_api_patches` contient des exemples de patchs (actuellement `ellipsoid_doc.json`).
+
 
 
