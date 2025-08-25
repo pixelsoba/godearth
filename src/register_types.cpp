@@ -7,6 +7,10 @@
 #include "globe3d.hpp"
 #include "vector_source.hpp"
 #include "math/Ellipsoid.hpp"
+#include "math/Geodetic3D.hpp"
+// Mesh tessellators
+#include "mesh/AbstractTessellator.hpp"
+#include "mesh/TetrahedronTessellator.hpp"
 
 using namespace godot;
 
@@ -22,6 +26,10 @@ static void initialize_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Globe3D>();
     ClassDB::register_class<VectorSource>();
     ClassDB::register_class<Ellipsoid>();
+    ClassDB::register_class<Geodetic3D>();
+    // Register tessellators
+    ClassDB::register_class<AbstractTessellator>();
+    ClassDB::register_class<TetrahedronTessellator>();
 
     g_gis_singleton = memnew(GisSingleton);
     Engine::get_singleton()->register_singleton("Gis", g_gis_singleton);

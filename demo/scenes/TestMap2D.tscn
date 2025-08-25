@@ -13,6 +13,3 @@ script = ExtResource("1_u4lv2")
 
 [node name="Map" type="Map2DControl" parent="."]
 layout_mode = 0
-
-[node name="Ellipsoid" type="Ellipsoid" parent="."]
-axis = Vector3(1, 1, 0.9966472)
