@@ -1,6 +1,7 @@
 #include "HeightmapTessellator.hpp"
 #include <math/Ellipsoid.hpp>
 
+#include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <algorithm>
@@ -62,9 +63,7 @@ Ref<ArrayMesh> HeightmapTessellator::build_mesh(const PackedFloat32Array& height
         }
     }
 
-    // (Option) Normales lissées – simple accumulate/normalize
-    // Décommente si tu veux les normales dès la construction
-    /*
+    // (Option) Normales lissées – simple accumulate/normalize    
     PackedVector3Array normals;
     normals.resize(vert_count);
     for (int i = 0; i < vert_count; ++i) normals.set(i, Vector3());
@@ -88,18 +87,23 @@ Ref<ArrayMesh> HeightmapTessellator::build_mesh(const PackedFloat32Array& height
         if (len > (real_t)0.0) n /= len;
         normals.set(i, n);
     }
-    */
+    
 
-    Ref<ArrayMesh> mesh;
-    mesh.instantiate();
+    Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
     Array arrays;
     arrays.resize(Mesh::ARRAY_MAX);
     arrays[Mesh::ARRAY_VERTEX] = vertices;
-    // arrays[Mesh::ARRAY_NORMAL] = normals; // si activé
+    arrays[Mesh::ARRAY_NORMAL] = normals;
     arrays[Mesh::ARRAY_TEX_UV] = uvs;
     arrays[Mesh::ARRAY_INDEX]  = indices;
 
     mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
     return mesh;
+}
+
+
+void HeightmapTessellator::_bind_methods() {
+    // build_mesh is declared static in the header; register as a static method.
+    ClassDB::bind_static_method("HeightmapTessellator", D_METHOD("build_mesh", "heights", "n", "lat0", "lon0", "lat1", "lon1", "ellipsoid"), &HeightmapTessellator::build_mesh);
 }

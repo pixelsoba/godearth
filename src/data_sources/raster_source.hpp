@@ -29,4 +29,6 @@ public:
                      int px_w, int px_h,
                      double ulx, double uly,
                      double lrx, double lry);
+protected:
+    static void _bind_methods();
 };

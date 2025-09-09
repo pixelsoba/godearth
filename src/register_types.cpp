@@ -5,11 +5,13 @@
 #include "gis_singleton.hpp"
 #include "map2d_control.hpp"
 #include "globe3d.hpp"
-#include "vector_source.hpp"
+#include "data_sources/vector_source.hpp"
+#include "data_sources/raster_source.hpp"
 #include "math/Ellipsoid.hpp"
 #include "math/Geodetic3D.hpp"
 // Mesh tessellators
 #include "mesh/AbstractTessellator.hpp"
+#include "mesh/HeightmapTessellator.hpp"
 #include "mesh/TetrahedronTessellator.hpp"
 
 using namespace godot;
@@ -25,10 +27,12 @@ static void initialize_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Map2DControl>();
     ClassDB::register_class<Globe3D>();
     ClassDB::register_class<VectorSource>();
+    ClassDB::register_class<RasterSource>();
     ClassDB::register_class<Ellipsoid>();
     ClassDB::register_class<Geodetic3D>();
     // Register tessellators
     ClassDB::register_class<AbstractTessellator>();
+    ClassDB::register_class<HeightmapTessellator>();
     ClassDB::register_class<TetrahedronTessellator>();
 
     g_gis_singleton = memnew(GisSingleton);

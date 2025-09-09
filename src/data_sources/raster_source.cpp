@@ -4,6 +4,8 @@
 #include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/core/memory.hpp>
+// support converting res:// paths
+#include <godot_cpp/classes/project_settings.hpp>
 
 #include <algorithm>
 
@@ -19,9 +21,24 @@ RasterSource::~RasterSource() {
 }
 
 Error RasterSource::open(const String &p_path) {
+    // Accept Godot resource paths (res://, user://) by globalizing them to a filesystem path
     path = p_path;
+    String real_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+    // Try opening the globalized filesystem path first
+    dataset = reinterpret_cast<GDALDataset *>(GDALOpenEx(real_path.utf8().get_data(), GDAL_OF_RASTER, nullptr, nullptr, nullptr));
+    if (dataset) {
+        return Error::OK;
+    }
+
+    // Fallback: try opening the original path (in case globalize_path returned the same or is not applicable)
     dataset = reinterpret_cast<GDALDataset *>(GDALOpenEx(p_path.utf8().get_data(), GDAL_OF_RASTER, nullptr, nullptr, nullptr));
-    return dataset ? Error::OK : Error::ERR_CANT_OPEN;
+    if (dataset) {
+        return Error::OK;
+    }
+
+    // TODO: when resources are packed in the .pck, implement a /vsimem/ fallback by reading
+    // the Godot resource via FileAccess and registering it with VSIFileFromMemBuffer for GDAL.
+    return Error::ERR_CANT_OPEN;
 }
 
 bool RasterSource::has_band(int idx) const {
@@ -112,4 +129,11 @@ Variant RasterSource::get_tile(int band_start, int band_count, int px_w, int px_
         tile_cache.emplace(key, var);
         return var;
     }
+}
+
+void RasterSource::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("open", "path"), &RasterSource::open);
+    ClassDB::bind_method(D_METHOD("has_band", "index"), &RasterSource::has_band);
+    ClassDB::bind_method(D_METHOD("get_tile", "band_start", "band_count", "px_w", "px_h", "ulx", "uly", "lrx", "lry"), &RasterSource::get_tile,
+                         DEFVAL(1), DEFVAL(1), DEFVAL(256), DEFVAL(256), DEFVAL(0.0), DEFVAL(0.0), DEFVAL(0.0), DEFVAL(0.0));
 }

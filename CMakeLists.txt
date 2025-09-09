@@ -30,9 +30,10 @@ if (TARGET proj::proj)
 endif()
 
 if (MSVC)
-  target_compile_options(godot-gis PRIVATE /W4 /permissive-)
+  target_compile_options(godot-gis PRIVATE /W4 /permissive- /wd4100)
 else()
-  target_compile_options(godot-gis PRIVATE -Wall -Wextra -Wpedantic)
+  # enable warnings but suppress unused-parameter which commonly appears in generated headers
+  target_compile_options(godot-gis PRIVATE -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 endif()
 
 set_target_properties(godot-gis PROPERTIES
