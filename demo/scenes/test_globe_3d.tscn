@@ -1,0 +1,72 @@
+[gd_scene load_steps=12 format=3 uid="uid://3taq10layshn"]
+
+[ext_resource type="Script" uid="uid://dekanu6xf6vph" path="res://scenes/test_globe_3d.gd" id="1_y2cnj"]
+[ext_resource type="Shader" uid="uid://buhfgd354cvgt" path="res://data/shaders/material/terrain.material.gdshader" id="2_1e3oo"]
+[ext_resource type="Script" uid="uid://duaplamolnfku" path="res://scenes/camera_3d.gd" id="2_lb540"]
+[ext_resource type="Shader" uid="uid://daejpidlwtcje" path="res://data/shaders/material/terrain_single.material.gdshader" id="2_nhuv3"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_y2cnj"]
+sky_top_color = Color(0.18816885, 0.23473659, 0.2929598, 1)
+sky_horizon_color = Color(0.91638845, 0.6676154, 0.5594762, 1)
+
+[sub_resource type="Sky" id="Sky_1e3oo"]
+sky_material = SubResource("ProceduralSkyMaterial_y2cnj")
+
+[sub_resource type="Environment" id="Environment_y2cnj"]
+background_mode = 2
+sky = SubResource("Sky_1e3oo")
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_nhuv3"]
+exposure_multiplier = 4.256
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lb540"]
+render_priority = 0
+shader = ExtResource("2_nhuv3")
+shader_parameter/tile_origin = Vector2(0, 0)
+shader_parameter/tile_size = 1.545
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nhuv3"]
+render_priority = 0
+shader = ExtResource("2_1e3oo")
+
+[sub_resource type="LabelSettings" id="LabelSettings_nhuv3"]
+outline_size = 6
+outline_color = Color(0, 0, 0, 1)
+
+[node name="Root" type="Node3D"]
+script = ExtResource("1_y2cnj")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.76612294, -0.62604475, -0.14533968, 0, -0.2261413, 0.97409457, -0.64269406, -0.74627614, -0.17325206, -2.926396, 2.6381323, -3.2984755)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_y2cnj")
+camera_attributes = SubResource("CameraAttributesPractical_nhuv3")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 2, -0.635)
+current = true
+script = ExtResource("2_lb540")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
+material_override = SubResource("ShaderMaterial_lb540")
+
+[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_nhuv3")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LabelInfo1" type="Label" parent="CanvasLayer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+label_settings = SubResource("LabelSettings_nhuv3")
+
+[node name="LabelInfo2" type="Label" parent="CanvasLayer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+label_settings = SubResource("LabelSettings_nhuv3")

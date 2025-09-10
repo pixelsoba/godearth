@@ -26,6 +26,14 @@
         "xloctime": "cpp",
         "xmemory": "cpp",
         "xstring": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "queue": "cpp",
+        "chrono": "cpp",
+        "compare": "cpp",
+        "iterator": "cpp",
+        "span": "cpp",
+        "tuple": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
     }
 }

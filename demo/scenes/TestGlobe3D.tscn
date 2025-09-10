@@ -1,5 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[node name="Root" type="Node3D"]
-
-[node name="Globe" type="Globe3D" parent="."]

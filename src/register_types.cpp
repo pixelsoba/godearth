@@ -14,6 +14,10 @@
 #include "mesh/HeightmapTessellator.hpp"
 #include "mesh/TetrahedronTessellator.hpp"
 
+#include "terrain/runtime/mesh/shared_grid.hpp"
+#include "terrain/runtime/lod/quadtree_cpu.hpp"
+#include "terrain/runtime/lod/camera_params.hpp"
+
 using namespace godot;
 
 static GisSingleton *g_gis_singleton = nullptr;
@@ -22,6 +26,10 @@ static void initialize_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
+
+    ClassDB::register_class<QuadtreeCPU>();
+    ClassDB::register_class<SharedGrid>();
+    ClassDB::register_class<CameraParams>();
 
     ClassDB::register_class<GisSingleton>();
     ClassDB::register_class<Map2DControl>();

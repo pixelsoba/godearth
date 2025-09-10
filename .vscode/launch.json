@@ -5,12 +5,25 @@
       "name": "Launch Godot (demo)",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "Godot_v4.5-beta6_win64.exe",
+      "program": "Godot_v4.5-rc1_win64.exe",
       "args": ["-e", "--path", "${workspaceFolder}/demo"],
       "cwd": "${workspaceFolder}/demo",
       "preLaunchTask": "Deploy godot-gis.dll to demo/bin",
       "stopAtEntry": false,
       "externalConsole": false
+    },
+    {
+      "name": "Attach to Godot (pick process)",
+      "type": "cppvsdbg",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "symbolSearchPath": "${workspaceFolder}/build/bin"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch demo and attach",
+      "configurations": ["Launch Godot (demo)", "Attach to Godot (pick process)"]
     }
   ]
 }

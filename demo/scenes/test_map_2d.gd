@@ -5,6 +5,11 @@ func _ready():
 	print("GDAL:", Gis.get_gdal_version())
 
 func test():
+	
+	
+	
+	
+	
 	# Test create ellipsoid
 	var e := Ellipsoid.create_scaled_wgs84()
 	add_child(e)

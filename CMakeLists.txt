@@ -17,7 +17,7 @@ find_package(gdal CONFIG REQUIRED)   # provides target gdal::gdal
 find_package(proj CONFIG QUIET)      # provides target proj::proj
 
 file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
-    src/*.cpp # <-- Ajout de celui-ci
+    src/*.cpp
     src/**/*.cpp
 )
 
