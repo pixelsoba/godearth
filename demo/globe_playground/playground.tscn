@@ -1,0 +1,78 @@
+[gd_scene load_steps=8 format=3 uid="uid://c1wr5ixf67b7e"]
+
+[ext_resource type="Script" uid="uid://bdsp4y7ifoc1f" path="res://globe_playground/playground.gd" id="1_pxmnf"]
+[ext_resource type="Script" uid="uid://biynegsrkmx68" path="res://globe_playground/globe_camera.gd" id="2_1u0xs"]
+[ext_resource type="Texture2D" uid="uid://dulwcwo0mgu4h" path="res://globe_playground/data/2k_earth_daymap.jpg" id="3_h6r2r"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1u0xs"]
+radius = 1.0
+
+[sub_resource type="CameraAttributesPhysical" id="CameraAttributesPhysical_h6r2r"]
+frustum_near = 0.001
+frustum_far = 5.0
+
+[sub_resource type="Environment" id="Environment_1u0xs"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v53yr"]
+albedo_texture = ExtResource("3_h6r2r")
+
+[node name="playground" type="Node3D"]
+script = ExtResource("1_pxmnf")
+
+[node name="GlobePick" type="StaticBody3D" parent="."]
+collision_layer = 16
+collision_mask = 0
+input_capture_on_drag = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GlobePick"]
+shape = SubResource("SphereShape3D_1u0xs")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.013415813, 1.1920929e-07, 4.7977605)
+attributes = SubResource("CameraAttributesPhysical_h6r2r")
+script = ExtResource("2_1u0xs")
+zoom_in_factor = 0.98
+zoom_out_factor = 1.02
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="DebugPanel" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/DebugPanel"]
+layout_mode = 0
+offset_right = 317.0
+offset_bottom = 225.0
+mouse_filter = 2
+
+[node name="LabelDebug1" type="Label" parent="CanvasLayer/DebugPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LabelDebug2" type="Label" parent="CanvasLayer/DebugPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LabelDebug3" type="Label" parent="CanvasLayer/DebugPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.99899185, -0.04489222, 0, 0.04489222, 0.99899185, 2.3841858e-07, 0.61686516, 8.035675)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1u0xs")
+
+[node name="DummyGlobe" type="CSGSphere3D" parent="."]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, 0)
+visible = false
+material_override = SubResource("StandardMaterial3D_v53yr")
+radius = 1.0
+radial_segments = 36
+rings = 18
