@@ -1,4 +1,4 @@
-@tool
+#@tool
 extends Node3D
 
 # --- DEBUG FLAGS ---
@@ -14,7 +14,15 @@ extends Node3D
 const MAX_LEVEL := 10
 const PATCH_SIZE := 10
 const RADIUS := 1.0
-const SPLIT_PIX_ERR := 0.1
+
+const TAU_SPLIT_PX := 64.0
+const TAU_MERGE_PX := 32.0
+const LEAF_BUDGET := 800
+const MAX_SPLITS_PER_FRAME := 24
+const MAX_MERGES_PER_FRAME := 48
+
+var _split_q: Array = []   # items: {p:Patch, prio:float}
+var _merge_q: Array = []   # items: {p:Patch, prio:float}
 
 var max_level: int =  -1
 
@@ -63,7 +71,8 @@ func _process(dt:float):
 	_dbg_merges = 0
 	_dbg_patch_count = 0
 	for root in faces:
-		_update_lod(root, cam)
+		_frame_select_and_apply(cam)
+		#_update_lod(root, cam)
 
 	# Affichage labels toutes les ~0.1 s
 	if _dbg_time_acc > 0.1:
@@ -223,27 +232,163 @@ func _cube_to_sphere(v:Vector3) -> Vector3:
 	).normalized()
 
 # ---------- DEBUG UI ----------
-func _update_labels(cam:Camera3D):
-	if not DEBUG_LABELS:
-		return
-
-	# Label 1: Cam info
-	var pos := cam.global_transform.origin
-	var dir := cam.global_transform.basis.z * -1.0
-	label_debug_1.text = "Cam pos=%.1f, %.1f, %.1f | dir=%.2f, %.2f, %.2f" % [
-		pos.x, pos.y, pos.z, dir.x, dir.y, dir.z
-	]
-
-	# Label 2: Patches + ops
-	label_debug_2.text = "Patches=%d | splits=%d merges=%d | maxL=%d" % [
-		_dbg_patch_count, _dbg_splits, _dbg_merges, MAX_LEVEL
-	]
-
-	# Label 3: Dernière décision LOD
-	label_debug_3.text = _dbg_last_reason
 
 static var mode_wireframe: bool = false
 func _input(event: InputEvent) -> void:
 	if event.is_action_released("mode_wireframe"):
 		mode_wireframe = !mode_wireframe
 		get_tree().root.get_viewport().debug_draw = Viewport.DEBUG_DRAW_WIREFRAME if mode_wireframe else 0
+
+
+####################### Culling
+# Debug + culling sûrs
+
+@export var DEBUG_CULLING_MODE := 1   # 0=off, 1=minimal, 2=minimal+horizon
+
+var _dbg_visits := 0
+var _dbg_visible := 0
+var _dbg_cull_front := 0
+var _dbg_cull_back := 0
+var _dbg_cull_horiz := 0
+var _dbg_leaves := 0
+var _dbg_sreq := 0
+var _dbg_mreq := 0
+var _dbg_sapplied := 0
+var _dbg_mapplied := 0
+var _dbg_last_size_px := 0.0
+
+func _frame_select_and_apply(cam: Camera3D) -> void:
+	# reset stats
+	_dbg_visits = 0; _dbg_visible = 0; _dbg_cull_front = 0; _dbg_cull_back = 0; _dbg_cull_horiz = 0
+	_dbg_leaves = 0; _dbg_sreq = 0; _dbg_mreq = 0; _dbg_sapplied = 0; _dbg_mapplied = 0
+	_split_q.clear(); _merge_q.clear()
+
+	for root in faces:
+		_dbg_leaves += _visit_for_candidates(root, cam)
+
+	# merges then splits (exemple simple)
+	_merge_q.sort_custom(func(a,b): return a.prio < b.prio)
+	for i in min(_merge_q.size(), MAX_MERGES_PER_FRAME):
+		_merge(_merge_q[i].p, cam); _dbg_mapplied += 1
+
+	_split_q.sort_custom(func(a,b): return a.prio > b.prio)
+	for i in min(_split_q.size(), MAX_SPLITS_PER_FRAME):
+		_split(_split_q[i].p, cam); _dbg_sapplied += 1
+
+	_update_labels(cam)
+
+func _visit_for_candidates(p:Patch, cam:Camera3D) -> int:
+	_dbg_visits += 1
+	if not _visible_patch(p, cam):
+		if p.mesh_instance: p.mesh_instance.visible = false
+		return 0
+
+	_dbg_visible += 1
+	var size_px := _patch_size_px(p, cam)
+	_dbg_last_size_px = size_px
+
+	if p.children.is_empty():
+		if p.mesh_instance: p.mesh_instance.visible = true
+		if size_px > TAU_SPLIT_PX and p.level < MAX_LEVEL:
+			_split_q.append({ "p": p, "prio": size_px }); _dbg_sreq += 1
+		return 1
+	else:
+		if p.mesh_instance: p.mesh_instance.visible = false
+		if size_px < TAU_MERGE_PX:
+			_merge_q.append({ "p": p, "prio": size_px }); _dbg_mreq += 1
+			return 1
+		var leaves := 0
+		for c in p.children:
+			leaves += _visit_for_candidates(c, cam)
+		return leaves
+
+func _visible_patch(p:Patch, cam:Camera3D) -> bool:
+	if DEBUG_CULLING_MODE == 0:
+		return true
+
+	# centre du patch
+	var uvC := p.rect.position + p.rect.size*0.5
+	var Cdir := _face_uv_to_dir(p.face, uvC)
+	var C    := Cdir * RADIUS
+
+	var cam_pos := cam.global_transform.origin
+	var cam_fwd := -cam.global_transform.basis.z
+
+	# 1) devant la caméra (plan de vue)
+	var v_cam := C - cam_pos
+	if v_cam.dot(cam_fwd) <= 0.0:
+		_dbg_cull_front += 1
+		return false
+
+	# 2) back-face (normale tournée à l’opposé de la caméra)
+	#   si le vecteur du point vers la caméra est "dans le même sens" que la normale,
+	#   on regarde la face arrière => cull
+	var v_point2cam := (cam_pos - C).normalized()
+	if Cdir.dot(v_point2cam) >= 0.0:
+		_dbg_cull_back += 1
+		return false
+
+	if DEBUG_CULLING_MODE == 1:
+		return true
+
+	# 3) horizon culling (approx sûre)
+	var d := cam_pos.length()
+	if d <= RADIUS:
+		return true
+	var alpha := acos(clamp(RADIUS / d, -1.0, 1.0))  # demi-angle horizon
+	# angle centre->coin ~ "rayon angulaire" du patch
+	var uvCorner := uvC + p.rect.size*0.5 * Vector2(1,1)
+	var cornerDir := _face_uv_to_dir(p.face, uvCorner)
+	var theta := acos(clamp(Cdir.dot(cornerDir), -1.0, 1.0))
+	# angle entre la direction centre de patch et direction caméra
+	var cam_dir := cam_pos.normalized()
+	var gamma := acos(clamp(Cdir.dot(cam_dir * -1.0), -1.0, 1.0))
+	if gamma > alpha + theta:
+		_dbg_cull_horiz += 1
+		return false
+
+	return true
+
+func _patch_size_px(p:Patch, cam:Camera3D) -> float:
+	var uv := p.rect
+	var uvC := uv.position + uv.size*0.5
+	var uvR := uvC + Vector2(uv.size.x*0.5, 0.0)
+	var uvU := uvC + Vector2(0.0, uv.size.y*0.5)
+	var C := _face_uv_to_dir(p.face, uvC) * RADIUS
+	var R := _face_uv_to_dir(p.face, uvR) * RADIUS
+	var U := _face_uv_to_dir(p.face, uvU) * RADIUS
+	var size_world := maxf((R-C).length(), (U-C).length()) * 2.0
+
+	var cam_pos := cam.global_transform.origin
+	var cam_fwd := -cam.global_transform.basis.z
+	var depth := (C - cam_pos).dot(cam_fwd)
+	if depth <= 1e-3:
+		return 0.0
+
+	var fov_v := deg_to_rad(cam.fov)
+	var focal_px := 0.5 * float(get_viewport().size.y) / tan(fov_v * 0.5)
+	return size_world * focal_px / depth
+
+func _update_labels(cam:Camera3D) -> void:
+	if not DEBUG_LABELS: return
+	if not is_instance_valid(label_debug_1): return
+
+	var pos := cam.global_transform.origin
+	label_debug_1.text = "Cam (%.1f,%.1f,%.1f) | L=%d | size_px=%.1f τS=%.0f τM=%.0f" % [
+		pos.x, pos.y, pos.z, MAX_LEVEL, _dbg_last_size_px, TAU_SPLIT_PX, TAU_MERGE_PX
+	]
+	label_debug_1.text = str("FPS: ", Engine.get_frames_per_second(), " ", label_debug_1.text)
+
+	label_debug_2.text = "visit=%d vis=%d leaves=%d | split rq/ap=%d/%d merge rq/ap=%d/%d" % [
+		_dbg_visits, _dbg_visible, _dbg_leaves, _dbg_sreq, _dbg_sapplied, _dbg_mreq, _dbg_mapplied
+	]
+
+	var mode_txt := "cull=?"
+	match DEBUG_CULLING_MODE:
+		0: mode_txt = "cull=OFF"
+		1: mode_txt = "cull=MIN"
+		2: mode_txt = "cull=MIN+HOR"
+		_: mode_txt = "cull=?"
+	label_debug_3.text = "%s | front=%d back=%d horiz=%d" % [
+		mode_txt, _dbg_cull_front, _dbg_cull_back, _dbg_cull_horiz
+	]

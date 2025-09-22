@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://c1wr5ixf67b7e"]
+[gd_scene load_steps=11 format=3 uid="uid://c1wr5ixf67b7e"]
 
 [ext_resource type="Script" uid="uid://bdsp4y7ifoc1f" path="res://globe_playground/playground.gd" id="1_pxmnf"]
 [ext_resource type="Script" uid="uid://biynegsrkmx68" path="res://globe_playground/globe_camera.gd" id="2_1u0xs"]
 [ext_resource type="Texture2D" uid="uid://dulwcwo0mgu4h" path="res://globe_playground/data/2k_earth_daymap.jpg" id="3_h6r2r"]
+[ext_resource type="Texture2D" uid="uid://djfdiqq7ba8bd" path="res://globe_playground/data/2k_stars.jpg" id="3_v53yr"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1u0xs"]
 radius = 1.0
@@ -11,7 +12,15 @@ radius = 1.0
 frustum_near = 0.001
 frustum_far = 5.0
 
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_ul4fl"]
+panorama = ExtResource("3_v53yr")
+
+[sub_resource type="Sky" id="Sky_ijm68"]
+sky_material = SubResource("PanoramaSkyMaterial_ul4fl")
+
 [sub_resource type="Environment" id="Environment_1u0xs"]
+background_mode = 2
+sky = SubResource("Sky_ijm68")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v53yr"]
 albedo_texture = ExtResource("3_h6r2r")
@@ -28,7 +37,7 @@ input_capture_on_drag = true
 shape = SubResource("SphereShape3D_1u0xs")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.013415813, 1.1920929e-07, 4.7977605)
+transform = Transform3D(1, 0, 0, 0, 0.9553365, -0.29552022, 0, 0.29552022, 0.9553365, 0, -0.8865607, 2.8660095)
 attributes = SubResource("CameraAttributesPhysical_h6r2r")
 script = ExtResource("2_1u0xs")
 zoom_in_factor = 0.98
@@ -54,10 +63,12 @@ mouse_filter = 2
 [node name="LabelDebug1" type="Label" parent="CanvasLayer/DebugPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+text = "Cam pos=0.0, -0.9, 2.9 | dir=-0.00, 0.30, -0.96"
 
 [node name="LabelDebug2" type="Label" parent="CanvasLayer/DebugPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+text = "Patches=0 | splits=0 merges=0 | maxL=10"
 
 [node name="LabelDebug3" type="Label" parent="CanvasLayer/DebugPanel/VBox"]
 unique_name_in_owner = true
@@ -73,6 +84,6 @@ environment = SubResource("Environment_1u0xs")
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, 0)
 visible = false
 material_override = SubResource("StandardMaterial3D_v53yr")
-radius = 1.0
+radius = 1.1
 radial_segments = 36
 rings = 18
